@@ -2,12 +2,31 @@
 namespace app\controllers;
 
 use app\models\Activity;
+use app\models\User;
 use JsonRpc2\Controller;
 use JsonRpc2\Exception;
 use yii\db\Expression;
 
 class ApiController extends Controller
 {
+    public function behaviors()
+    {
+        return [
+            'basicAuth' => [
+                'class' => \yii\filters\auth\HttpBasicAuth::class,
+                'auth' => function ($username, $password) {
+                    if ($username === 'api' && $password === 'buh4zgs8Rnqy6XVZ') {
+                        $model = new User();
+
+                        return $model;
+                    }
+
+                    return null;
+                },
+            ],
+        ];
+    }
+
     /**
      * @param string $url
      * @param string $date
@@ -20,11 +39,9 @@ class ApiController extends Controller
         $model = new Activity();
         $model->setAttributes(['url' => $url, 'date' => $date]);
 
-        if (!$model->validate()) {
+        if (!$model->save()) {
             throw new Exception('Invalid parameters', Exception::INVALID_PARAMS, $model->getErrors());
         }
-
-        $model->save();
 
         return true;
     }
