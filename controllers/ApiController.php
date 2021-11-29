@@ -15,7 +15,7 @@ class ApiController extends Controller
             'basicAuth' => [
                 'class' => \yii\filters\auth\HttpBasicAuth::class,
                 'auth' => function ($username, $password) {
-                    if ($username === 'api' && $password === 'buh4zgs8Rnqy6XVZ') {
+                    if ($username === \Yii::$app->params['serverLogin'] && $password === \Yii::$app->params['serverPassword']) {
                         $model = new User();
 
                         return $model;
@@ -48,11 +48,11 @@ class ApiController extends Controller
 
     /**
      * @param int $page
+     * @param int $limit
+     * @param $sort
      */
-    public function actionGetActivities($page)
+    public function actionGetActivities($page, $limit, $sort = [])
     {
-        $limit = 5;
-
         if ($page < 1) {
             $page = 1;
         }
@@ -60,6 +60,10 @@ class ApiController extends Controller
         $query = Activity::find()
             ->select(['url', new Expression('MAX(`date`) as lastVisit'), new Expression('COUNT(*) as count')])
             ->groupBy('url');
+
+        if ($sort) {
+            $query->orderBy((array) $sort);
+        }
 
         return [
             'total' => $query->count(),
